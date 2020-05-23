@@ -1,0 +1,196 @@
+<template>
+    
+    <lightning-card>
+        <template if:true={order}>
+        <lightning-button label="Edit" slot="actions" onclick={editModeEnable}></lightning-button>
+        <template if:false={modeToggle}>
+            <lightning-button label="Save" slot="actions" onclick={saveClicked}></lightning-button>
+            <lightning-button label="Cancel" slot="actions" onclick={cancelEditClicked}></lightning-button>
+        </template>
+        <div class="slds-m-around_medium">
+            <lightning-layout horizontal-align="spread">
+                <lightning-layout-item padding="around-small" size="4">
+                    <lightning-input type="text"
+                        label="Order Number" value={order.OrderNumber} disabled>
+                    </lightning-input>
+                </lightning-layout-item>
+                <lightning-layout-item padding="around-small" size="4">
+                    <lightning-input type="text"
+                        label="Final Amount" value={order.TotalAmount} disabled>
+                    </lightning-input>
+                </lightning-layout-item>
+                <lightning-layout-item padding="around-small" size="4">
+                    <!--Free Space-->
+                </lightning-layout-item>
+            </lightning-layout>
+            <lightning-layout horizontal-align="spread">
+                <lightning-layout-item padding="around-small" size="4">
+                    <lightning-input type="text"
+                        label="Account Name" value={order.Account.Name} disabled>
+                    </lightning-input>
+                </lightning-layout-item>
+            </lightning-layout>
+        </div>
+        <br><br>
+
+        <template if:false={modeToggle}>
+            <lightning-button label="Add Item" icon-name="utility:add" class="slds-m-left_x-small" onclick={addItemClicked}></lightning-button>
+        </template>
+        <template if:true={tableToggle}>
+            <div class="slds-m-around_medium">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-m-top_small">
+                    <thead>
+                    <tr class="slds-line-height_reset">
+                        <th class="" scope="col">
+                            <div class="slds-truncate">Product Code</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate">Product Name</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate">Brand</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate">Stock Quantity</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate">Quantity</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate">     Discount(%)</div>
+                        </th>
+                        <template if:false={modeToggle}>
+                            <th class="" scope="col">
+                                <div class="slds-truncate">Delete</div>
+                            </th>
+                        </template>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!--iterate all contact records using for-each iteration -->    
+                    <template if:true={productList}>
+                        <template for:each={productList} for:item="product">
+                            <tr class="slds-hint-parent" key={product.ProductId}>
+                                <td>
+                                    <div class="slds-truncate">{product.ProductCode}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate">{product.Name}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate ">{product.Brand}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate">{product.Stock_Quantity}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate"><lightning-input type="number" min="1" variant="label-hidden" name={product} value={product.Quantity} onchange={updateQuantity} disabled={modeToggle}></lightning-input>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate"><lightning-input type="number" min="0" max="100" variant="label-inline" name={product} value={product.Discount} onchange={updateDiscount} disabled={modeToggle}></lightning-input>
+                                    </div>
+                                </td>
+                                <template if:false={modeToggle}>
+                                    <td>
+                                        <div class="slds-truncate "><button class="slds-button slds-button_destructive" name={product.ProductCode} onclick={deleteFromSummaryClicked}>Delete</button></div>
+                                    </td>
+                                </template>
+                            </tr>
+                        </template>
+                    </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+    </template>
+    </lightning-card>
+    <template if:true={addItemToggle}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+           <div class="slds-modal__container" style="max-width: 80rem ;width: 80% ;">
+              <!-- modal header start -->
+              <header class="slds-modal__header">
+                 <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeModal}>
+                    <lightning-icon icon-name="utility:close"
+                       alternative-text="close"
+                       variant="inverse"
+                       size="small" ></lightning-icon>
+                    <span class="slds-assistive-text">Close</span>
+                 </button>
+                 <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Add New Item</h2>
+              </header>
+              <!-- modal body start -->
+              <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                <div class="slds-m-around_medium">
+                    <div class="slds-m-bottom_small">
+                        <lightning-input type="text"
+                            label="Search Products Here"
+                            onkeyup={handleSearch}>
+                        </lightning-input>
+                    </div>
+                </div>
+            
+                <!--Search Table-->
+            
+                <div class="slds-m-around_medium">
+                    <template if:true={showSearchList}>
+                        <div>
+                            <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-m-top_small">
+                                <thead>
+                                   <tr class="slds-line-height_reset">
+                                      <th class="" scope="col">
+                                         <div class="slds-truncate">Product Code</div>
+                                      </th>
+                                      <th class="" scope="col">
+                                         <div class="slds-truncate">Product Name</div>
+                                      </th>
+                                      <th class="" scope="col">
+                                        <div class="slds-truncate">Brand</div>
+                                     </th>
+                                     <th class="" scope="col">
+                                        <div class="slds-truncate">MRP</div>
+                                     </th>
+                                     <th class="" scope="col">
+                                        <div class="slds-truncate">Action</div>
+                                     </th>
+                                   </tr>
+                                </thead>
+                                <tbody>
+                                   <!--iterate all contact records using for-each iteration -->    
+                                   <template if:true={searchProductList}>
+                                    <template for:each={searchProductList} for:item="product">
+                                        <tr class="slds-hint-parent" key={product.Id}>
+                                            <td>
+                                                <div class="slds-truncate">{product.Product2.ProductCode}</div>
+                                            </td>
+                                            <td>
+                                                <div class="slds-truncate">{product.Product2.Name}</div>
+                                            </td>
+                                            <td>
+                                                <div class="slds-truncate">{product.Product2.Brand__c}</div>
+                                            </td>
+                                            <td>
+                                                <div class="slds-truncate">{product.UnitPrice}</div>
+                                            </td>
+                                            <td>
+                                                <div class="slds-truncate"><lightning-button label="Add Item" variant="brand" value={product} onclick={addNewProduct}></lightning-button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                     </template>
+                                   </template>
+                                </tbody>
+                             </table>
+                            </div>
+                    </template>
+                </div>
+              </div>
+              <!-- modal footer start-->
+              <footer class="slds-modal__footer">
+                 <button class="slds-button slds-button_neutral" onclick={closeModal}>Cancel</button>
+              </footer>
+           </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+     </template>
+</template>

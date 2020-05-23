@@ -1,0 +1,202 @@
+<template>
+    <lightning-layout horizontal-align="spread">
+        <lightning-layout-item padding="around-small" size="4">
+            <lightning-input type="text"
+                label="Account" onclick={lookUpAccounts} disabled={accountInputFieldDisabled}>
+            </lightning-input>
+        </lightning-layout-item>
+        <lightning-layout-item padding="around-small" size="4">
+            <lightning-input type="text"
+                label="PriceBook" onclick={lookUpPriceBooks} disabled={priceBookInputFieldDisabled}>
+            </lightning-input>
+        </lightning-layout-item>
+        <lightning-layout-item padding="around-small" size="4">
+            <!--Free Space-->
+        </lightning-layout-item>
+    </lightning-layout>
+    <div class="slds-m-around_medium">
+        <div class="slds-m-bottom_small">
+            <lightning-input type="text"
+                label="Search Products Here"
+                onkeyup={handleSearch}>
+            </lightning-input>
+            <lightning-button variant="Brand" label="Hide Search Results" onclick={hideSearchTable}></lightning-button>
+        </div>
+    </div>
+    <!--Search Table-->
+    <div class="slds-m-around_medium">
+        <template if:true={searchProductTableToggle}>
+            <div>
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-m-top_small">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th class="" scope="col">
+                               <div class="slds-truncate">Product Code</div>
+                            </th>
+                            <th class="" scope="col">
+                               <div class="slds-truncate">Product Name</div>
+                            </th>
+                            <th class="" scope="col">
+                              <div class="slds-truncate">Brand</div>
+                            </th>
+                            <th class="" scope="col">
+                               <div class="slds-truncate">MRP</div>
+                            </th>
+                            <th class="" scope="col">
+                               <div class="slds-truncate">Action</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody> 
+                       <template if:true={searchProductList}>
+                        <template for:each={searchProductList} for:item="product">
+                            <tr class="slds-hint-parent" key={product.Id}>
+                                <td>
+                                    <div class="slds-truncate">{product.Product2.ProductCode}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate">{product.Product2.Name}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate">{product.Product2.Brand__c}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate">{product.UnitPrice}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate"><lightning-button label="Add Item" variant="brand" value={product} onclick={addProduct}></lightning-button>
+                                    </div>
+                                </td>
+                            </tr>
+                         </template>
+                       </template>
+                    </tbody>
+                 </table>
+                </div>
+        </template>
+    </div>
+
+    <!--Selected Product Table-->
+    <br>
+    <div class="slds-m-around_medium">
+        
+        <template if:true={selectedTableToggle}>
+            <div>
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-m-top_small">
+                    <thead>
+                    <tr class="slds-line-height_reset">
+                        <th class="" scope="col">
+                            <div class="slds-truncate">Product Code</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate">Product Name</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate">Brand</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate">Stock Quantity</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate">Quantity</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate">Discount(%)</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate">Action</div>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!--iterate all contact records using for-each iteration -->    
+                    <template if:true={selectedProductList}>
+                        <template for:each={selectedProductList} for:item="product">
+                            <tr class="slds-hint-parent" key={product.Id}>
+                                <td>
+                                    <div class="slds-truncate">{product.ProductCode}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate">{product.Name}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate">{product.Brand}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate">{product.Stock_Quantity}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate"><lightning-input type="number" min="1" variant="label-hidden" name={product} value={product.Quantity} onchange={updateQuantity} required></lightning-input>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate"><lightning-input type="number" min="0" max="100" variant="label-hidden" name={product} value={product.Discount} onchange={updateDiscount} required></lightning-input>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate"><lightning-button label="Remove" variant="brand" value={product} onclick={removeClicked}></lightning-button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+    </div>
+
+    <br>
+    <div class="slds-m-around_medium">
+        <lightning-button variant="brand" label="SAVE" onclick={saveClicked} class="slds-m-left_x-small"></lightning-button>
+        &nbsp;
+        <lightning-button variant="brand" label="Clear Search" onclick={clearSearchClicked} class="slds-m-left_x-small"></lightning-button>
+    </div>
+
+    <!--Modal For Inputs and Summary-->
+    <template if:true={modalToggle}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+           <div class="slds-modal__container" style="max-width: 80rem ;width: 60% ;">
+              <!-- modal header start -->
+              <header class="slds-modal__header">
+                <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">{modalHeader}</h2>
+              </header>
+              <!-- modal body start -->
+              <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                <template if:true={lookUpAccountsToggle}>
+                    <template if:true={accList.data}>
+                        <template for:each={accList.data} for:item="acc">
+                            <div class="slds-m-bottom--medium" key={acc.Id}>
+                                <lightning-button variant="brand-outline" label={acc.Name} name={acc.Name} value={acc.Id} onclick={accountSelected} class="slds-m-left_x-small"></lightning-button>
+                            </div>
+                        </template>
+                    </template>
+                </template>
+                <template if:true={lookUpPriceBooksToggle}>
+                    <template if:true={priceBookList.data}>
+                        <template for:each={priceBookList.data} for:item="priceBook">
+                            <div class="slds-m-bottom--medium" key={priceBook.Id}>
+                                <lightning-button variant="brand-outline" label={priceBook.Name} name={priceBook.Name} value={priceBook.Id} onclick={priceBookSelected} class="slds-m-left_x-small"></lightning-button>
+                            </div>
+                        </template>
+                    </template>
+                </template>
+                <template if:true={orderSummaryToggle}>
+                    <c-edit-order record={orderId} new-order-summary={newOrderSummary}></c-edit-order>
+                </template>
+              </div>
+              <!-- modal footer start-->
+              <footer class="slds-modal__footer">
+                <template if:true={orderSummaryToggle}>
+                    <button class="slds-button slds-button_success" onclick={confirmOrderClicked}>Confirm Order</button>
+                    <button class="slds-button slds-button_destructive" onclick={cancelOrderClicked}>Cancel Order</button>
+                </template>
+                <template if:true={lookUpAccountsToggle}>
+                    <button class="slds-button slds-button_neutral" onclick={closeModal}>Cancel</button>
+                </template>
+              </footer>
+           </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+     </template>
+</template>
